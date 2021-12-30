@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity()
             } else
             {
                 Toast.makeText(this , "Please turn on your location" , Toast.LENGTH_LONG).show()
+                /*Intent is created to go to System Settings screen*/
                 Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).apply {
                     startActivity(this)
                 }
@@ -127,5 +128,6 @@ class MainActivity : AppCompatActivity()
                 android.Manifest.permission.ACCESS_FINE_LOCATION
             ) , PERMISSION_ID
         )
+        /*Note: these permissions must be declared in AndroidManifest.xml file*/
     }
 }
