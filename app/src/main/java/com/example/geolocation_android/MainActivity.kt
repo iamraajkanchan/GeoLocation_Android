@@ -12,14 +12,14 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.*
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity()
-{
-    private lateinit var fusedLocationProviderClient : FusedLocationProviderClient
-    private val PERMISSION_ID = 44
-    override fun onCreate(savedInstanceState : Bundle?)
-    {
+private const val PERMISSION_ID = 44
+
+class MainActivity : AppCompatActivity() {
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         fusedLocationProviderClient = FusedLocationProviderClient(this)
@@ -27,49 +27,40 @@ class MainActivity : AppCompatActivity()
     }
 
     @SuppressLint("MissingPermission")
-    private fun getLastLocation()
-    {
-        if (checkPermissions())
-        {
-            if (isLocationEnable())
-            {
+    private fun getLastLocation() {
+        if (checkPermissions()) {
+            if (isLocationEnable()) {
                 fusedLocationProviderClient.lastLocation.addOnCompleteListener {
                     val location = it.result
-                    if (location == null)
-                    {
+                    if (location == null) {
                         requestNewLocationData()
-                    } else
-                    {
+                    } else {
                         tvLatitude.text = location.latitude.toString()
                         tvLongitude.text = location.longitude.toString()
                     }
                 }
-            } else
-            {
-                Toast.makeText(this , "Please turn on your location" , Toast.LENGTH_LONG).show()
+            } else {
+                Snackbar.make(coordinatorMain, "Please turn on your location", Snackbar.LENGTH_LONG).show()
                 /*Intent is created to go to System Settings screen*/
                 Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).apply {
                     startActivity(this)
                 }
             }
-        } else
-        {
+        } else {
             requestPermissions()
         }
 
     }
 
-    private fun checkPermissions() : Boolean
-    {
+    private fun checkPermissions(): Boolean {
         return ActivityCompat.checkSelfPermission(
-            this , android.Manifest.permission.ACCESS_COARSE_LOCATION
+            this, android.Manifest.permission.ACCESS_COARSE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-            this , android.Manifest.permission.ACCESS_FINE_LOCATION
+            this, android.Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    private fun isLocationEnable() : Boolean
-    {
+    private fun isLocationEnable(): Boolean {
         val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
             LocationManager.NETWORK_PROVIDER
@@ -77,22 +68,18 @@ class MainActivity : AppCompatActivity()
     }
 
     override fun onRequestPermissionsResult(
-        requestCode : Int , permissions : Array<out String> , grantResults : IntArray
-    )
-    {
-        super.onRequestPermissionsResult(requestCode , permissions , grantResults)
-        if (requestCode == PERMISSION_ID)
-        {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-            {
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_ID) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 getLastLocation()
             }
         }
     }
 
     @SuppressLint("MissingPermission")
-    private fun requestNewLocationData()
-    {
+    private fun requestNewLocationData() {
         val locationRequest = LocationRequest()
         locationRequest.interval = 50000
         locationRequest.fastestInterval = 50000
@@ -101,32 +88,28 @@ class MainActivity : AppCompatActivity()
         locationRequest.numUpdates = 1
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
         fusedLocationProviderClient.requestLocationUpdates(
-            locationRequest , locationCallback , Looper.myLooper() !!
+            locationRequest, locationCallback, Looper.myLooper()!!
         )
     }
 
-    private val locationCallback = object : LocationCallback()
-    {
-        override fun onLocationResult(locationResult : LocationResult)
-        {
+    private val locationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
             val location = locationResult.lastLocation
             tvLatitude.text = location.latitude.toString()
             tvLongitude.text = location.longitude.toString()
         }
 
-        override fun onLocationAvailability(locationAvailability : LocationAvailability)
-        {
+        override fun onLocationAvailability(locationAvailability: LocationAvailability) {
             super.onLocationAvailability(locationAvailability)
         }
     }
 
-    private fun requestPermissions()
-    {
+    private fun requestPermissions() {
         ActivityCompat.requestPermissions(
-            this , arrayOf(
-                android.Manifest.permission.ACCESS_COARSE_LOCATION ,
+            this, arrayOf(
+                android.Manifest.permission.ACCESS_COARSE_LOCATION,
                 android.Manifest.permission.ACCESS_FINE_LOCATION
-            ) , PERMISSION_ID
+            ), PERMISSION_ID
         )
         /*Note: these permissions must be declared in AndroidManifest.xml file*/
     }
