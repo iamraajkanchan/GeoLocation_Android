@@ -3,24 +3,26 @@ package com.example.geolocation_android
 import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Intent
+import android.location.Location
 import android.os.Binder
 import android.os.IBinder
 import android.os.Looper
 import android.widget.Toast
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.*
+
+const val LOCATION_LATITUDE: String = "location latitude"
+const val LOCATION_LONGITUDE: String = "location longitude"
 
 class LocationService : Service() {
 
     private var locationBinder: LocationBinder? = null
     private var fusedLocationProviderClient: FusedLocationProviderClient? = null
-    var latitude: String = ""
-    var longitude: String = ""
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
             val location = locationResult.lastLocation
-            latitude = location.latitude.toString()
-            longitude = location.longitude.toString()
+            configureSendBroadcastMessage(location)
         }
 
         override fun onLocationAvailability(locationAvailability: LocationAvailability) {
@@ -60,14 +62,25 @@ class LocationService : Service() {
             if (location == null) {
                 requestNewLocationData()
             } else {
-                latitude = location.latitude.toString()
-                longitude = location.longitude.toString()
-                Toast.makeText(applicationContext, "Latitude : $latitude, Longitude: $longitude", Toast.LENGTH_SHORT).show()
+                configureSendBroadcastMessage(location)
+                Toast.makeText(
+                    applicationContext,
+                    "Latitude : ${location.latitude}, Longitude: ${location.longitude}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
 
+    private fun configureSendBroadcastMessage(location: Location?) {
+        val locationIntent = Intent(LOCATION_SERVICE_INTENT).apply {
+            putExtra(LOCATION_LATITUDE, location?.latitude.toString())
+            putExtra(LOCATION_LONGITUDE, location?.longitude.toString())
+        }
+        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(locationIntent)
+    }
+
     inner class LocationBinder : Binder() {
-        fun getService() : LocationService = this@LocationService
+        fun getService(): LocationService = this@LocationService
     }
 }
