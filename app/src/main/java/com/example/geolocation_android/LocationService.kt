@@ -2,15 +2,15 @@ package com.example.geolocation_android
 
 import android.annotation.SuppressLint
 import android.app.Service
+import android.content.Context
 import android.content.Intent
-import android.os.Binder
-import android.os.IBinder
-import android.os.Looper
+import android.os.*
 import android.widget.Toast
 import com.google.android.gms.location.*
 
 class LocationService : Service() {
 
+    private var locationMessenger: Messenger? = null
     private var locationBinder: LocationBinder? = null
     private var fusedLocationProviderClient: FusedLocationProviderClient? = null
     var latitude: String = ""
@@ -39,6 +39,11 @@ class LocationService : Service() {
         getLastLocation()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        locationBinder = null; fusedLocationProviderClient = null; locationMessenger = null
+    }
+
     @SuppressLint("MissingPermission")
     private fun requestNewLocationData() {
         val locationRequest = LocationRequest()
@@ -62,12 +67,16 @@ class LocationService : Service() {
             } else {
                 latitude = location.latitude.toString()
                 longitude = location.longitude.toString()
-                Toast.makeText(applicationContext, "Latitude : $latitude, Longitude: $longitude", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    applicationContext,
+                    "Latitude : $latitude, Longitude: $longitude",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
 
     inner class LocationBinder : Binder() {
-        fun getService() : LocationService = this@LocationService
+        fun getService(): LocationService = this@LocationService
     }
 }
