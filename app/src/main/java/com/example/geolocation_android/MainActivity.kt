@@ -1,18 +1,18 @@
 package com.example.geolocation_android
 
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
 import androidx.core.app.ActivityCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 
 private const val PERMISSION_ID = 44
+const val LOCATION_SERVICE_INTENT = "location service intent"
 
 class MainActivity : AppCompatActivity() {
 
@@ -75,8 +75,14 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PERMISSION_ID) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                /*
                 tvLatitude.text = locationService?.latitude
                 tvLongitude.text = locationService?.longitude
+                */
+                LocalBroadcastManager.getInstance(this).registerReceiver(
+                    LocationBroadcastReceiver(),
+                    IntentFilter(LOCATION_SERVICE_INTENT)
+                )
             }
         } else {
             requestPermissions()
@@ -97,5 +103,18 @@ class MainActivity : AppCompatActivity() {
         super.onStop()
         unbindService(locationServiceConnection)
         isServiceConnected = false
+    }
+
+    inner class LocationBroadcastReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action?.equals(LOCATION_SERVICE_INTENT) == true) {
+                tvLatitude.text = intent.getStringExtra(LOCATION_LATITUDE)
+                tvLongitude.text = intent.getStringExtra(LOCATION_LONGITUDE)
+            } else {
+                Snackbar.make(
+                    coordinatorMain, "Latitude and Longitude Not found!!!", Snackbar.LENGTH_SHORT
+                ).show()
+            }
+        }
     }
 }
