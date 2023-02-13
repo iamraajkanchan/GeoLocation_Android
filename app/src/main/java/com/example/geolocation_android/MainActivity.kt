@@ -1,18 +1,17 @@
 package com.example.geolocation_android
 
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
 import android.content.pm.PackageManager
 import android.location.LocationManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.android.synthetic.main.activity_main.*
 
 private const val PERMISSION_ID = 44
+const val LOCATION_SERVICE_INTENT = "location service intent"
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,6 +35,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private var locationBroadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action?.equals(LOCATION_SERVICE_INTENT) == true) {
+                tvLatitude.text = intent.getStringExtra(LOCATION_LATITUDE).toString()
+                tvLongitude.text = intent.getStringExtra(LOCATION_LONGITUDE).toString()
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -45,9 +53,7 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
         if (checkPermissions()) {
             if (isLocationEnabled()) {
-                Intent(this@MainActivity, LocationService::class.java).apply {
-                    bindService(this, locationServiceConnection, BIND_AUTO_CREATE)
-                }
+                showLatLong()
             }
         } else {
             requestPermissions()
@@ -75,11 +81,17 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PERMISSION_ID) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                tvLatitude.text = locationService?.latitude
-                tvLongitude.text = locationService?.longitude
+                showLatLong()
             }
         } else {
             requestPermissions()
+        }
+    }
+
+    private fun showLatLong() {
+        LocalBroadcastManager.getInstance(this).registerReceiver(locationBroadcastReceiver, IntentFilter(LOCATION_SERVICE_INTENT))
+        Intent(this@MainActivity, LocationService::class.java).apply {
+            bindService(this, locationServiceConnection, BIND_AUTO_CREATE)
         }
     }
 
@@ -98,4 +110,5 @@ class MainActivity : AppCompatActivity() {
         unbindService(locationServiceConnection)
         isServiceConnected = false
     }
+
 }
