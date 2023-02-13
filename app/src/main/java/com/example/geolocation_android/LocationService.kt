@@ -7,7 +7,6 @@ import android.location.Location
 import android.os.Binder
 import android.os.IBinder
 import android.os.Looper
-import android.widget.Toast
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.*
 
@@ -45,7 +44,7 @@ class LocationService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        locationBinder = null; fusedLocationProviderClient = null; locationMessenger = null
+        locationBinder = null; fusedLocationProviderClient = null;
     }
 
     @SuppressLint("MissingPermission")
