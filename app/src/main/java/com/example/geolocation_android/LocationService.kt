@@ -43,7 +43,7 @@ class LocationService : Service() {
 
     @SuppressLint("MissingPermission")
     private fun requestNewLocationData() {
-        val locationRequest = LocationRequest()
+        val locationRequest = LocationRequest.create()
         locationRequest.interval = 50000
         locationRequest.fastestInterval = 50000
         locationRequest.smallestDisplacement = 170f // 170m = 0.1 mile
@@ -63,11 +63,6 @@ class LocationService : Service() {
                 requestNewLocationData()
             } else {
                 configureSendBroadcastMessage(location)
-                Toast.makeText(
-                    applicationContext,
-                    "Latitude : ${location.latitude}, Longitude: ${location.longitude}",
-                    Toast.LENGTH_SHORT
-                ).show()
             }
         }
     }
