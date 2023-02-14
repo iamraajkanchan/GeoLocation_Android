@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (name?.className?.equals("LocationService") == true) {
                 val binder = service as LocationService.LocationBinder
-                locationService = binder.getService()
+                locationService = binder.getLocationService()
                 isServiceConnected = true
             }
         }
