@@ -4,6 +4,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 
+/**
+ * Note: this class is not needed in the project because we have used LocalBroadcastManager.
+ * */
+
 class LocationBroadcast(iLocation: ILocation) : BroadcastReceiver() {
     private var iLocation: ILocation? = iLocation
 
